@@ -1,0 +1,24 @@
+{
+  "assetIndex": {
+    "id": "1.12",
+    "sha1": "041c2c31ff710ef50d75c879d76c9ad0ba0119e6",
+    "size": 174627,
+    "totalSize": 164096057,
+    "url": "https://launchermeta.mojang.com/v1/packages/041c2c31ff710ef50d75c879d76c9ad0ba0119e6/1.12.json"
+  },
+  "assets": "1.12",
+  "downloads": {
+    "client": {
+      "sha1": "0f275bc1547d01fa5f56ba34bdc87d981ee12daf",
+      "size": 10180113,
+      "url": "https://piston-data.mojang.com/v1/objects/0f275bc1547d01fa5f56ba34bdc87d981ee12daf/client.jar"
+    }
+  },
+  "id": "1.12.2-rust",
+  "mainClass": "net.minecraft.client.main.Main",
+  "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userType ${user_type}",
+  "minimumLauncherVersion": 18,
+  "releaseTime": "2026-10-11T12:00:00+00:00",
+  "time": "2026-10-11T12:00:00+00:00",
+  "type": "release"
+}

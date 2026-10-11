@@ -1,0 +1,7 @@
+target/
+downloads/
+*.zip
+*.jar
+.git/
+__pycache__/
+*.pyc

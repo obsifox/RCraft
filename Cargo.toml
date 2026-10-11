@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "crates/rminecraft-protocol",
+    "crates/rminecraft-world",
+    "crates/rminecraft-client",
+    "crates/rminecraft-launcher",
+    "crates/rminecraft-server"
+]
+resolver = "2"

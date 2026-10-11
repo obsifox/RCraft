@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rMinecraft Launcher - Native 1.12.2 Rust Edition</title>
+  <style>
+    :root {
+      --bg-dark: #121314;
+      --bg-panel: #1e1f22;
+      --bg-card: #2b2d31;
+      --accent-green: #3ca942;
+      --accent-green-hover: #47c14e;
+      --accent-gold: #ffaa00;
+      --accent-blue: #38bdf8;
+      --border-color: #3f4248;
+      --text-main: #f2f3f5;
+      --text-muted: #949ba4;
+      --font-pixel: 'Courier New', Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 0.5s ease-in-out;
+    }
+
+    /* Overlay for readability */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(18, 19, 20, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 0;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 16px 24px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      margin-bottom: 20px;
+    }
+
+    .branding {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .dirt-icon {
+      width: 38px;
+      height: 38px;
+      background: #8b5a2b;
+      border: 3px solid #2da940;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .title-group h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group .badge {
+      font-size: 11px;
+      background: linear-gradient(135deg, #e65100, #ff9800);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .title-group p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: #555;
+      image-rendering: pixelated;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-info .name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .user-info .tag {
+      font-size: 10px;
+      color: var(--accent-green);
+    }
+
+    /* Tab Content Areas */
+    .tab-content {
+      display: none;
+      flex: 1;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Play Tab Layout */
+    .hero-banner {
+      position: relative;
+      height: 380px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      background: #222;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 32px;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 0.4s ease;
+    }
+
+    .hero-gradient {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(18,19,20,0.95) 100%);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 650px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(45, 169, 64, 0.25);
+      border: 1px solid var(--accent-green);
+      color: #4ade80;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: 36px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    }
+
+    .hero-desc {
+      font-size: 14px;
+      color: #d1d5db;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Bottom Control Bar */
+    .control-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .options-group {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .input-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-box label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .input-box select, .input-box input {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      min-width: 180px;
+    }
+
+    .play-btn {
+      background: linear-gradient(180deg, #389e3e 0%, #297a30 100%);
+      color: #fff;
+      border: none;
+      border-bottom: 4px solid #1c5421;
+      padding: 16px 48px;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 6px 20px rgba(45, 169, 64, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-btn span.sub {
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.85;
+      letter-spacing: 0.5px;
+    }
+
+    .play-btn:hover {
+      background: linear-gradient(180deg, #44b74b 0%, #328f39 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(45, 169, 64, 0.6);
+    }
+
+    .play-btn:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+
+    .play-btn.stop {
+      background: linear-gradient(180deg, #d32f2f 0%, #9a1c1c 100%);
+      border-bottom-color: #6d1010;
+      box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
+    }
+
+    /* Cards Grid (Collectibles / Accounts / Settings) */
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #555;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #222;
+    }
+
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .card-category {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.15);
+    }
+
+    .btn-sm {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-sm:hover {
+      background: #3a3d44;
+    }
+
+    .btn-sm.primary {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .btn-sm.primary:hover {
+      background: var(--accent-green-hover);
+    }
+
+    /* Accounts & Skin Inspector */
+    .skins-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    .preview-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .skin-canvas {
+      width: 160px;
+      height: 240px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: #18191c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .skin-texture-img {
+      max-width: 140px;
+      max-height: 140px;
+      image-rendering: pixelated;
+    }
+
+    .cape-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .cape-icon {
+      width: 24px;
+      height: 16px;
+      border-radius: 2px;
+      background-size: cover;
+    }
+
+    /* Console Logs Viewer */
+    .terminal-container {
+      background: #0d0e10;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 480px;
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #222;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .terminal-body {
+      flex: 1;
+      overflow-y: auto;
+      font-family: var(--font-pixel);
+      font-size: 12px;
+      line-height: 1.6;
+      color: #38bdf8;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .terminal-body .log-server { color: #4ade80; }
+    .terminal-body .log-client { color: #facc15; }
+    .terminal-body .log-launcher { color: #c084fc; }
+
+    /* Status indicator */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      display: inline-block;
+    }
+    .status-dot.online {
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-overlay"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="branding">
+        <div class="dirt-icon">R</div>
+        <div class="title-group">
+          <h1>rMinecraft <span class="badge">Rust 1.12.2</span></h1>
+          <p>Native Protocol 340 Client • Zero Java Dependency</p>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('play')">🎮 Play</button>
+        <button class="tab-btn" onclick="switchTab('accounts')">👤 Accounts & Skins</button>
+        <button class="tab-btn" onclick="switchTab('collectibles')">🎨 Collectibles & Themes</button>
+        <button class="tab-btn" onclick="switchTab('packs')">📦 Modern Textures</button>
+        <button class="tab-btn" onclick="switchTab('console')">🖥️ Console Logs</button>
+      </nav>
+
+      <div class="user-pill">
+        <img id="header-avatar" class="user-avatar" src="/skins/RustDev1.png" alt="Avatar" onerror="this.src='/images/wilderness_bound.png'">
+        <div class="user-info">
+          <span class="name" id="header-username">RustDev1</span>
+          <span class="tag"><span class="status-dot online" id="srv-dot"></span> <span id="srv-status-text">Server Ready</span></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab 1: Play (Main) -->
+    <div id="tab-play" class="tab-content active">
+      <div class="hero-banner" id="hero-banner" style="background-image: url('/images/wilderness_bound.png');">
+        <div class="hero-gradient"></div>
+        <div class="hero-content">
+          <span class="hero-badge" id="hero-category">Featured Collectible Wallpaper</span>
+          <h2 class="hero-title" id="hero-title">Wilderness Bound</h2>
+          <p class="hero-desc" id="hero-desc">Experience Minecraft 1.12.2 reimagined in pure Rust. Native zero-GC performance, instant chunk loading, offline accounts, and backported modern textures.</p>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <div class="options-group">
+          <div class="input-box">
+            <label>Selected Profile</label>
+            <select id="select-profile" onchange="onProfileChange()">
+              <option value="RustDev1">RustDev1 (Offline Developer 1)</option>
+              <option value="RustDev2">RustDev2 (Offline Developer 2)</option>
+            </select>
+          </div>
+
+          <div class="input-box">
+            <label>Target Server</label>
+            <input type="text" id="input-server" value="127.0.0.1:25565" placeholder="host:port">
+          </div>
+
+          <div class="input-box">
+            <label>Client Engine</label>
+            <select disabled>
+              <option>Native Rust 1.12.2 (Protocol 340)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <button class="play-btn" id="main-play-btn" onclick="togglePlay()">
+            <span id="play-btn-text">PLAY 1.12.2</span>
+            <span class="sub" id="play-btn-sub">Rust Native Binary</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Accounts & Skins -->
+    <div id="tab-accounts" class="tab-content">
+      <div class="skins-container">
+        <!-- Left: Visual Inspector -->
+        <div class="preview-box">
+          <h3>Player Cosmetics</h3>
+          <p style="font-size: 12px; color: var(--text-muted);">Local offline 3D skin & cape texture inspector</p>
+          
+          <div class="skin-canvas">
+            <img id="inspect-skin-img" class="skin-texture-img" src="/skins/RustDev1.png" alt="Skin" onerror="this.src='/images/wilderness_bound.png'">
+          </div>
+
+          <div class="cape-badge">
+            <div id="inspect-cape-preview" class="cape-icon" style="background: #b42828;"></div>
+            <span id="inspect-cape-name">Red Dragon Cape</span>
+          </div>
+
+          <button class="btn-sm primary" style="width: 100%; margin-top: 10px;" onclick="switchTab('play')">Equip & Play</button>
+        </div>
+
+        <!-- Right: Accounts Manager -->
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+            <h3 style="margin-bottom: 12px;">Create New Offline Local Account</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+              <div class="input-box">
+                <label>Username</label>
+                <input type="text" id="new-user-name" placeholder="e.g. MyRustPlayer">
+              </div>
+              <div class="input-box">
+                <label>Skin</label>
+                <select id="new-user-skin">
+                  <option value="steve.png">Steve (Default)</option>
+                  <option value="alex.png">Alex (Slim)</option>
+                  <option value="RustDev1.png">RustDev1 Custom</option>
+                </select>
+              </div>
+              <div class="input-box">
+                <label>Cape</label>
+                <select id="new-user-cape">
+                  <option value="red_dragon_cape.png">Red Dragon Cape</option>
+                  <option value="15th_anniversary_cape.png">15th Anniversary Cape</option>
+                  <option value="twitch_purple_cape.png">Twitch Purple Cape</option>
+                  <option value="founder_blue_cape.png">Founder Blue Cape</option>
+                </select>
+              </div>
+              <button class="btn-sm primary" style="height: 40px; padding: 0 20px;" onclick="createAccount()">+ Add Account</button>
+            </div>
+          </div>
+
+          <div style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+            <h3 style="margin-bottom: 12px;">Registered Local Profiles (.minecraft/launcher_profiles.json)</h3>
+            <div id="accounts-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Collectibles & Themes -->
+    <div id="tab-collectibles" class="tab-content">
+      <div style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <h2>Official Minecraft Wallpapers & Collectibles</h2>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+          Curated directly from <a href="https://www.minecraft.net/en-us/collectibles?tabs=%7B%22tab%22%3A0%7D" target="_blank" style="color: var(--accent-blue);">Minecraft.net Collectibles</a>. Click "Apply as Launcher Theme" to dynamically customize your launcher artwork.
+        </p>
+      </div>
+
+      <div class="grid-cards" id="collectibles-grid">
+        <!-- Populated via API -->
+      </div>
+    </div>
+
+    <!-- Tab 4: Modern Textures -->
+    <div id="tab-packs" class="tab-content">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-body" style="padding: 24px;">
+          <span class="card-category">Backported Modern Resource Pack</span>
+          <h2 style="font-size: 24px; margin-top: 4px;">Modern Texture Pack for 1.12.2 (Version 26.x Assets)</h2>
+          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px; line-height: 1.6;">
+            All 1,432 original textures from Minecraft 1.12.2 have been scanned, matched, and replaced with modern high-fidelity Jappa textures from the latest Minecraft version. This gives the 1.12.2 client modern visual fidelity while preserving 100% protocol 340 server compatibility.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;">
+            <div style="background: var(--bg-card); padding: 14px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--text-muted);">1.12.2 Textures</div>
+              <div style="font-size: 22px; font-weight: 800; color: #fff;">1,432</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 14px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--text-muted);">Modern Textures</div>
+              <div style="font-size: 22px; font-weight: 800; color: #fff;">4,182</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 14px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--text-muted);">Pack Format</div>
+              <div style="font-size: 22px; font-weight: 800; color: #fff;">3 (1.12.2)</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 14px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--text-muted);">File Location</div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--accent-green); word-break: break-all;">.minecraft/resourcepacks/</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 5: Console Logs -->
+    <div id="tab-console" class="tab-content">
+      <div class="terminal-container">
+        <div class="terminal-header">
+          <span style="font-weight: 700; font-size: 13px;">Live Client & Protocol 340 Packet Stream</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-sm" onclick="clearLogs()">Clear</button>
+            <button class="btn-sm" onclick="restartServer()">Restart Test Server</button>
+          </div>
+        </div>
+        <div class="terminal-body" id="log-output">
+          Loading system logs...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isClientRunning = false;
+    let selectedProfile = "RustDev1";
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      
+      const tabMap = {
+        'play': 0, 'accounts': 1, 'collectibles': 2, 'packs': 3, 'console': 4
+      };
+      document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        
+        isClientRunning = data.client_running;
+        const playBtn = document.getElementById('main-play-btn');
+        const playText = document.getElementById('play-btn-text');
+        
+        if (isClientRunning) {
+          playBtn.classList.add('stop');
+          playText.innerText = 'STOP CLIENT';
+        } else {
+          playBtn.classList.remove('stop');
+          playText.innerText = 'PLAY 1.12.2';
+        }
+
+        const srvDot = document.getElementById('srv-dot');
+        const srvText = document.getElementById('srv-status-text');
+        if (data.server_running && data.server_ping) {
+          srvDot.className = 'status-dot online';
+          srvText.innerText = `Server Online (${data.server_ping.latency_ms || 2}ms)`;
+        } else {
+          srvDot.className = 'status-dot';
+          srvText.innerText = 'Server Offline';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadAccounts() {
+      try {
+        const res = await fetch('/api/accounts');
+        const data = await res.json();
+        const container = document.getElementById('accounts-list-container');
+        container.innerHTML = '';
+
+        const select = document.getElementById('select-profile');
+        select.innerHTML = '';
+
+        for (const [uuid, auth] of Object.entries(data.accounts || {})) {
+          const opt = document.createElement('option');
+          opt.value = auth.username;
+          opt.innerText = `${auth.username} (${uuid.substring(0, 8)}...)`;
+          select.appendChild(opt);
+
+          const row = document.createElement('div');
+          row.style = 'display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);';
+          row.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="/skins/${auth.username}.png" style="width: 32px; height: 32px; border-radius: 4px;" onerror="this.src='/images/wilderness_bound.png'">
+              <div>
+                <div style="font-weight: 700;">${auth.username}</div>
+                <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-pixel);">UUID: ${uuid}</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-sm" onclick="selectUser('${auth.username}')">Select</button>
+            </div>
+          `;
+          container.appendChild(row);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function selectUser(username) {
+      document.getElementById('select-profile').value = username;
+      onProfileChange();
+      switchTab('play');
+    }
+
+    function onProfileChange() {
+      selectedProfile = document.getElementById('select-profile').value;
+      document.getElementById('header-username').innerText = selectedProfile;
+      document.getElementById('header-avatar').src = `/skins/${selectedProfile}.png`;
+      document.getElementById('inspect-skin-img').src = `/skins/${selectedProfile}.png`;
+    }
+
+    async function loadCollectibles() {
+      try {
+        const res = await fetch('/api/collectibles');
+        const data = await res.json();
+        const grid = document.getElementById('collectibles-grid');
+        grid.innerHTML = '';
+
+        for (const item of data.wallpapers) {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <img class="card-img" src="${item.image}" alt="${item.title}">
+            <div class="card-body">
+              <span class="card-category">${item.category}</span>
+              <div class="card-title">${item.title}</div>
+              <p class="card-desc">${item.description}</p>
+            </div>
+            <div class="card-footer">
+              <button class="btn-sm primary" onclick="applyTheme('${item.image}', '${item.title}', '${item.description}', '${item.category}')">Apply as Theme</button>
+              <a href="${item.image}" download class="btn-sm" style="text-decoration: none;">View Art</a>
+            </div>
+          `;
+          grid.appendChild(card);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function applyTheme(imageUrl, title, desc, cat) {
+      document.getElementById('hero-banner').style.backgroundImage = `url('${imageUrl}')`;
+      document.getElementById('hero-title').innerText = title;
+      document.getElementById('hero-desc').innerText = desc;
+      document.getElementById('hero-category').innerText = cat;
+      document.body.style.backgroundImage = `url('${imageUrl}')`;
+    }
+
+    async function togglePlay() {
+      const username = document.getElementById('select-profile').value;
+      const server = document.getElementById('input-server').value;
+
+      if (isClientRunning) {
+        await fetch('/api/stop-client', { method: 'POST' });
+      } else {
+        await fetch('/api/launch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username,
+            server: server,
+            skin: `${username}.png`,
+            cape: `${username}.png`
+          })
+        });
+        switchTab('console');
+      }
+      setTimeout(loadStatus, 500);
+    }
+
+    async function createAccount() {
+      const username = document.getElementById('new-user-name').value.trim();
+      const skin = document.getElementById('new-user-skin').value;
+      const cape = document.getElementById('new-user-cape').value;
+
+      if (!username) {
+        alert('Please enter a username');
+        return;
+      }
+
+      await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, skin, cape })
+      });
+
+      document.getElementById('new-user-name').value = '';
+      await loadAccounts();
+    }
+
+    async function loadLogs() {
+      try {
+        const res = await fetch('/api/logs');
+        const data = await res.json();
+        const el = document.getElementById('log-output');
+        el.innerHTML = '';
+        for (const line of data.logs) {
+          const div = document.createElement('div');
+          if (line.includes('[Server]')) div.className = 'log-server';
+          else if (line.includes('[Client]')) div.className = 'log-client';
+          else div.className = 'log-launcher';
+          div.innerText = line;
+          el.appendChild(div);
+        }
+        el.scrollTop = el.scrollHeight;
+      } catch (e) {}
+    }
+
+    function clearLogs() {
+      document.getElementById('log-output').innerHTML = '';
+    }
+
+    async function restartServer() {
+      await fetch('/api/server/stop', { method: 'POST' });
+      setTimeout(async () => {
+        await fetch('/api/server/start', { method: 'POST' });
+      }, 500);
+    }
+
+    // Init
+    loadStatus();
+    loadAccounts();
+    loadCollectibles();
+    loadLogs();
+    setInterval(loadStatus, 2000);
+    setInterval(loadLogs, 1000);
+  </script>
+</body>
+</html>

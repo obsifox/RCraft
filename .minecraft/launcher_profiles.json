@@ -1,0 +1,39 @@
+{
+  "profiles": {
+    "Profile_RustDev1": {
+      "name": "rMinecraft (RustDev1)",
+      "lastVersionId": "1.12.2-rust",
+      "created": "2026-10-11T12:00:00Z",
+      "type": "custom",
+      "skin_path": "/home/user/rMinecraft/.minecraft/skins/RustDev1.png",
+      "cape_path": "/home/user/rMinecraft/.minecraft/capes/RustDev1.png"
+    },
+    "Profile_RustDev2": {
+      "name": "rMinecraft (RustDev2)",
+      "lastVersionId": "1.12.2-rust",
+      "created": "2026-10-11T12:00:00Z",
+      "type": "custom",
+      "skin_path": "/home/user/rMinecraft/.minecraft/skins/RustDev2.png",
+      "cape_path": null
+    }
+  },
+  "selectedUser": {
+    "account": "bea52e60-cca0-3597-b9f2-a41f57d59c31",
+    "profile": "Profile_RustDev2"
+  },
+  "authenticationDatabase": {
+    "271775f1-46d3-350c-9c42-07e09a46f2a0": {
+      "displayName": "RustDev1",
+      "accessToken": "local-offline-token",
+      "username": "RustDev1",
+      "uuid": "271775f1-46d3-350c-9c42-07e09a46f2a0"
+    },
+    "bea52e60-cca0-3597-b9f2-a41f57d59c31": {
+      "displayName": "RustDev2",
+      "accessToken": "local-offline-token",
+      "username": "RustDev2",
+      "uuid": "bea52e60-cca0-3597-b9f2-a41f57d59c31"
+    }
+  },
+  "clientToken": "rminecraft-local-token-2026"
+}
